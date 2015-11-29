@@ -6,6 +6,7 @@ function resolveSimple (assert) {
   const opts = { basedir: __dirname + '/fixtures/simple' }
   resolve.packages(pkgs, opts, assert)
 }
+
 test('find', function (t) {
   t.plan(10)
 
