@@ -25,14 +25,17 @@ npm install resolve-tree
 
 ```js
 const resolve = require('resolve-tree')
-const pkgs = ['foo', 'bar']
 
+// Names of the packages to resolve
+const names = ['foo', 'bar']
+
+// Custom optional params for the resolution
 const opts = {
   basedir: process.cwd(),
   lookups: ['dependencies', 'devDependencies']
 }
 
-resolve.find(pkgs, opts, function (err, tree) {
+resolve.packages(names, opts, function (err, tree) {
   if (err) return console.error(err)
 
   const json = JSON.stringify(tree, null, 2)
