@@ -2,7 +2,7 @@ const test = require('tape')
 const resolve = require('.')
 
 test('find', { timeout: 2000 }, function (t) {
-  t.plan(2)
+  t.plan(3)
 
   const pkgs = ['foo']
   const opts = { basedir: __dirname + '/fixtures/simple' }
@@ -11,6 +11,7 @@ test('find', { timeout: 2000 }, function (t) {
 
   function assert (err, paths) {
     t.equal(err, null)
+    t.equal(paths.length, 2)
     console.log("Resolutions:", JSON.stringify(paths, null, 2))
     console.log("Flatten:", resolve.flatten(paths))
     console.log("Flatten manifest:", resolve.flattenByField(paths))
