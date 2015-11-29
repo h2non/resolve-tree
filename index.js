@@ -4,9 +4,30 @@ const async = require('async')
 const resolve = require('resolve')
 const assign = require('object-assign')
 
-exports.find = find
+exports.byName = resolveByName
+exports.packages = resolveByName
+exports.manifest = manifest
 exports.flatten = flatten
-exports.flattenByField = flattenByField
+exports.flattenMap = flattenMap
+
+function manifest (meta, params, cb) {
+  if (typeof params === 'function') { cb = params; params = {} }
+
+  const opts = setOptions(params)
+  const deps = readDependencies(meta, opts)
+
+  resolveByName(deps, opts, cb)
+}
+
+function resolveByName (names, params, cb) {
+  if (typeof params === 'function') { cb = params; params = {} }
+  if (typeof names === 'string') names = [ names ]
+
+  const opts = setOptions(params)
+  const pkgs = mapPackages(names, opts)
+
+  lookupPackages(pkgs, opts, cb)
+}
 
 function flatten (tree, buf) {
   return tree.reduce(function (buf, pkg) {
@@ -18,25 +39,11 @@ function flatten (tree, buf) {
   }, buf || [])
 }
 
-function flattenByField (tree, field) {
-  return flatten(tree).map(function (pkg) {
+function flattenMap (tree, field) {
+  const mapper = typeof field === 'function' ? field : function (pkg) {
     return pkg[field || 'manifest']
-  })
-}
-
-function find (deps, params, cb) {
-  if (typeof params === 'function') { cb = params; params = {} }
-
-  const defaults = {
-    lookups: ['dependencies'],
-    basedir: process.cwd()
   }
-
-  const opts = assign(defaults, params || {})
-  const pkgs = mapPackages(deps, opts)
-
-  // Lookup packages and its dependencies recursively
-  lookupPackages(pkgs, opts, cb)
+  return flatten(tree).map(mapper)
 }
 
 function lookupPackages (pkgs, opts, cb) {
@@ -70,16 +77,14 @@ function resolvePackage (pkg, cb) {
 function resolveDependencies (pkgs, opts, cb) {
   async.map(pkgs, function (pkg, next) {
     const deps = readDependencies(pkg.meta, opts)
-    if (!deps.length) {
-      return next(null, pkg)
-    }
+    if (!deps.length) return next(null, pkg)
 
     // Overwrite options for the next lookup
     const options = assign({}, opts)
     options.basedir = path.dirname(pkg.manifest)
 
-    // Find package child dependencies
-    find(deps, options, childDependencies(pkg, next))
+    // Resolve package child dependencies
+    resolveByName(deps, options, childDependencies(pkg, next))
   }, cb)
 }
 
@@ -130,6 +135,14 @@ function mapPackages (pkgs, opts) {
       basedir: basedir
     }
   })
+}
+
+function setOptions (params) {
+  const defaults = {
+    lookups: ['dependencies'],
+    basedir: process.cwd()
+  }
+  return assign(defaults, params || {})
 }
 
 function readJSON (path) {

@@ -1,6 +1,9 @@
 # resolve-tree [![Build Status](https://api.travis-ci.org/h2non/resolve-tree.svg?branch=master&style=flat)](https://travis-ci.org/h2non/resolve-tree) [![Code Climate](https://codeclimate.com/github/h2non/resolve-tree/badges/gpa.svg)](https://codeclimate.com/github/h2non/resolve-tree) [![NPM](https://img.shields.io/npm/v/resolve-tree.svg)](https://www.npmjs.org/package/resolve-tree) [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com)
 
-Recursively resolve node.js modules and its dependencies looking in the `node_modules` tree.
+Recursively resolve node.js modules and its dependencies looking in `node_modules` trees.
+
+The module resolution algorithm behavies like the officinal one used in node.js.
+It also mimics the recursive module resolution behavior used by `npm`.
 
 ## Features
 
@@ -10,7 +13,7 @@ Recursively resolve node.js modules and its dependencies looking in the `node_mo
 - Produces a detailed abstract dependency tree representation
 - Provides convenient helpers that you will love
 - Almost dependency free (only uses some stable tiny modules)
-- Fast: all the i/o operations are executed asynchronously in parallel
+- Fast: all the I/O operations are executed asynchronously in parallel
 
 ## Installation
 
@@ -118,9 +121,14 @@ The resolved dependency tree serialized to JSON looks like this:
 - **basedir** `string` - Base directory path to start lookups. Default to `process.cwd()`.
 - **lookups** `array<string>` - Dependency types to lookup. Allowed values are: `dependencies`, `devDependencies`, `peerDependencies`. Defaults to: `dependencies`
 
-### resolve.find(pkgs, [ opts, ] cb)
+### resolve.packages(names, [ opts, ] cb)
+Alias: `byName()`
 
-Find and resolve packages by names and its dependencies recursively.
+Find and resolve modules and its dependencies recursively looking by package name.
+
+### resolve.manifest(pkgManifest, [ opts, ] cb)
+
+Resolve dependencies recursively reading the `package.json` metadata.
 
 ### resolve.flatten(tree) => `array<pkg>`
 
@@ -128,7 +136,7 @@ Flatten dependency tree to one level structure tree.
 
 ### resolve.flattenMap(tree, [ field ]) => `array<mixed>`
 
-Flatten the given dependency tree mapping by dependency value field.
+Flatten the given dependency tree mapping by dependency value field or custom mapper function.
 
 ## License
 
