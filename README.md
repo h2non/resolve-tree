@@ -2,7 +2,7 @@
 
 Recursively resolve node.js modules and its dependencies looking in `node_modules` trees.
 
-The module resolution algorithm behavies like the officinal one used in node.js.
+The module resolution algorithm behavies like [`require.resolve`](https://nodejs.org/docs/v0.4.8/api/all.html#all_Together...) in node.js.
 It also mimics the recursive module resolution behavior used by `npm`.
 
 ## Features
