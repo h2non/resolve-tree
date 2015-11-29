@@ -6,7 +6,7 @@
   "engineStrict": true,
   "scripts": {
     "lint": "standard *.js",
-    "test": "tape test.js"
+    "test": "npm run lint && tape test.js"
   },
   "engines": {
     "node": ">= 0.12"

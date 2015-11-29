@@ -51,7 +51,7 @@ function resolvePackage (pkg, cb) {
     if (err) return cb(err)
 
     findMainfest(main, function (err, manifestPath) {
-      if (err) return next(new Error('Cannot find package.json for package: ' + pkg.name))
+      if (err) return cb(new Error('Cannot find package.json for package: ' + pkg.name))
 
       const manifest = readJSON(manifestPath)
       if (!manifest) return cb(new Error('Bad formed JSON: ' + manifestPath))

@@ -1,4 +1,4 @@
-# resolve-tree
+# resolve-tree [![Build Status](https://api.travis-ci.org/h2non/resolve-tree.svg?branch=master&style=flat)](https://travis-ci.org/h2non/resolve-tree) [![Code Climate](https://codeclimate.com/github/h2non/resolve-tree/badges/gpa.svg)](https://codeclimate.com/github/h2non/resolve-tree) [![NPM](https://img.shields.io/npm/v/resolve-tree.svg)](https://www.npmjs.org/package/resolve-tree) [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com)
 
 Recursively resolve node.js modules and its dependencies looking in the `node_modules` tree.
 
@@ -29,85 +29,85 @@ const opts = {
   lookups: ['dependencies', 'devDependencies']
 }
 
-resolve.find(pkgs, opts, function (err, deps) {
-  if (err) console.error(err)
+resolve.find(pkgs, opts, function (err, tree) {
+  if (err) return console.error(err)
 
-  const json = JSON.stringify(deps, null, 2)
+  const json = JSON.stringify(tree, null, 2)
   console.log(json)
 })
 ```
 
-The generated dependencies tree looks like this:
+The resolved dependency tree serialized to JSON looks like this:
 ```json
 [{
+  "name": "foo",
+  "manifest": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo/package.json",
+  "basedir": "/Users/h2non/Projects/resolve-tree/fixtures/simple",
+  "main": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo/index.js",
+  "root": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo",
+  "meta": {
     "name": "foo",
-    "manifest": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo/package.json",
-    "basedir": "/Users/h2non/Projects/resolve-tree/fixtures/simple",
-    "main": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo/index.js",
-    "root": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo",
+    "dependencies": {
+      "baz": "~0.1.0",
+      "bar": "~0.1.0",
+      "quz": "~0.1.0"
+    }
+  },
+  "dependencies": [{
+    "name": "baz",
+    "manifest": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/baz/package.json",
+    "basedir": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo",
+    "main": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/baz/index.js",
+    "root": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/baz",
     "meta": {
-        "name": "foo",
-        "dependencies": {
-            "baz": "~0.1.0",
-            "bar": "~0.1.0",
-            "quz": "~0.1.0"
-        }
+      "name": "baz"
+    }
+  }, {
+    "name": "bar",
+    "manifest": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/bar/package.json",
+    "basedir": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo",
+    "main": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/bar/index.js",
+    "root": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/bar",
+    "meta": {
+      "name": "bar",
+      "dependencies": {
+        "baz": "~0.1.0"
+      }
     },
     "dependencies": [{
-        "name": "baz",
-        "manifest": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/baz/package.json",
-        "basedir": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo",
-        "main": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/baz/index.js",
-        "root": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/baz",
-        "meta": {
-            "name": "baz"
-        }
-    }, {
-        "name": "bar",
-        "manifest": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/bar/package.json",
-        "basedir": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo",
-        "main": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/bar/index.js",
-        "root": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/bar",
-        "meta": {
-            "name": "bar",
-            "dependencies": {
-                "baz": "~0.1.0"
-            }
-        },
-        "dependencies": [{
-            "name": "baz",
-            "manifest": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/baz/package.json",
-            "basedir": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/bar",
-            "main": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/baz/index.js",
-            "root": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/baz",
-            "meta": {
-                "name": "baz"
-            }
-        }]
-    }, {
-        "name": "quz",
-        "manifest": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo/node_modules/quz/package.json",
-        "basedir": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo",
-        "main": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo/node_modules/quz/index.js",
-        "root": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo/node_modules/quz",
-        "meta": {
-            "name": "quz",
-            "dependencies": {
-                "baz": "~0.0.1"
-            }
-        },
-        "dependencies": [{
-            "name": "baz",
-            "manifest": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo/node_modules/quz/node_modules/baz/package.json",
-            "basedir": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo/node_modules/quz",
-            "main": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo/node_modules/quz/node_modules/baz/index.js",
-            "root": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo/node_modules/quz/node_modules/baz",
-            "meta": {
-                "name": "baz",
-                "version": "0.0.1"
-            }
-        }]
+      "name": "baz",
+      "manifest": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/baz/package.json",
+      "basedir": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/bar",
+      "main": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/baz/index.js",
+      "root": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/baz",
+      "meta": {
+        "name": "baz"
+      }
     }]
+  }, {
+    "name": "quz",
+    "manifest": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo/node_modules/quz/package.json",
+    "basedir": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo",
+    "main": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo/node_modules/quz/index.js",
+    "root": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo/node_modules/quz",
+    "meta": {
+      "name": "quz",
+      "dependencies": {
+        "baz": "~0.0.1"
+      }
+    },
+    "dependencies": [{
+      "name": "baz",
+      "manifest": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo/node_modules/quz/node_modules/baz/package.json",
+      "basedir": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo/node_modules/quz",
+      "main": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo/node_modules/quz/node_modules/baz/index.js",
+      "root": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo/node_modules/quz/node_modules/baz",
+      "meta": {
+        "name": "baz",
+        "version": "0.0.1"
+      }
+    }]
+  }]
 }]
 ```
 
@@ -122,9 +122,13 @@ The generated dependencies tree looks like this:
 
 Find and resolve packages by names and its dependencies recursively.
 
-### resolve.flatten(pkgs) => `array<pkg>`
+### resolve.flatten(tree) => `array<pkg>`
 
-### resolve.flattenByField(pkgs, [ field ]) => `array<string>`
+Flatten dependency tree to one level structure tree.
+
+### resolve.flattenMap(tree, [ field ]) => `array<mixed>`
+
+Flatten the given dependency tree mapping by dependency value field.
 
 ## License
 
