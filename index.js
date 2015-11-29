@@ -1,6 +1,6 @@
 const fs = require('fs')
+const fw = require('fw')
 const path = require('path')
-const async = require('async')
 const resolve = require('resolve')
 const assign = require('object-assign')
 
@@ -47,7 +47,7 @@ function flattenMap (tree, field) {
 }
 
 function lookupPackages (pkgs, opts, cb) {
-  async.map(pkgs, resolvePackage, function (err, pkgs) {
+  fw.each(pkgs, resolvePackage, function (err, pkgs) {
     if (err) return cb(err)
     resolveDependencies(pkgs, opts, cb)
   })
@@ -75,7 +75,7 @@ function resolvePackage (pkg, cb) {
 }
 
 function resolveDependencies (pkgs, opts, cb) {
-  async.map(pkgs, function (pkg, next) {
+  fw.each(pkgs, function (pkg, next) {
     const deps = readDependencies(pkg.meta, opts)
     if (!deps.length) return next(null, pkg)
 
