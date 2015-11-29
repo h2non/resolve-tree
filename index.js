@@ -47,7 +47,7 @@ function flattenMap (tree, field) {
 }
 
 function lookupPackages (pkgs, opts, cb) {
-  fw.each(pkgs, resolvePackage, function (err, pkgs) {
+  fw.eachSeries(pkgs, resolvePackage, function (err, pkgs) {
     if (err) return cb(err)
     resolveDependencies(pkgs, opts, cb)
   })
@@ -57,7 +57,8 @@ function resolvePackage (pkg, cb) {
   resolve(pkg.name, { basedir: pkg.basedir }, function (err, main) {
     if (err) return cb(err)
 
-    findMainfest(main, function (err, manifestPath) {
+    const base = path.dirname(main)
+    findMainfest(base, function (err, manifestPath) {
       if (err) return cb(new Error('Cannot find package.json for package: ' + pkg.name))
 
       const manifest = readJSON(manifestPath)
@@ -75,7 +76,7 @@ function resolvePackage (pkg, cb) {
 }
 
 function resolveDependencies (pkgs, opts, cb) {
-  fw.each(pkgs, function (pkg, next) {
+  fw.eachSeries(pkgs, function (pkg, next) {
     const deps = readDependencies(pkg.meta, opts)
     if (!deps.length) return next(null, pkg)
 
@@ -102,8 +103,7 @@ function attachDependencies (pkg, deps) {
   return pkg
 }
 
-function findMainfest (main, cb) {
-  const base = path.dirname(main)
+function findMainfest (base, cb) {
   const file = path.join(base, 'package.json')
 
   fs.exists(file, function (exists) {
