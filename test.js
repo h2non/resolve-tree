@@ -1,5 +1,5 @@
 const test = require('tape')
-const resolve = require('.')
+const resolve = require('./')
 
 function resolveSimple (assert) {
   const pkgs = ['foo']
