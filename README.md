@@ -23,7 +23,11 @@ npm install resolve-tree
 ```js
 const resolve = require('resolve-tree')
 const pkgs = ['foo', 'bar']
-const opts = { basedir: process.cwd() }
+
+const opts = {
+  basedir: process.cwd(),
+  lookups: ['dependencies', 'devDependencies']
+}
 
 resolve.find(pkgs, opts, function (err, deps) {
   if (err) console.error(err)
@@ -112,7 +116,7 @@ The generated dependencies tree looks like this:
 ### Supported options
 
 - **basedir** `string` - Base directory path to start lookups. Default to `process.cwd()`.
-- **lookups** `array<string>` - Dependency types to lookup. Allowed values are: `dependencies`, `devDependencies`, `peerDependencies`.
+- **lookups** `array<string>` - Dependency types to lookup. Allowed values are: `dependencies`, `devDependencies`, `peerDependencies`. Defaults to: `dependencies`
 
 ### resolve.find(pkgs, [ opts, ] cb)
 
