@@ -19,14 +19,16 @@ function manifest (meta, params, cb) {
   resolveByName(deps, opts, cb)
 }
 
-function resolveByName (names, params, cb) {
+function resolveByName (names, params, cb, lookups) {
+  lookups = lookups || []
+
   if (typeof params === 'function') { cb = params; params = {} }
   if (typeof names === 'string') names = [ names ]
 
   const opts = setOptions(params)
-  const pkgs = mapPackages(names, opts)
+  const pkgs = mapPackages(names, opts, lookups)
 
-  lookupPackages(pkgs, opts, cb)
+  lookupPackages(pkgs, opts, lookups, cb)
 }
 
 function flatten (tree, buf) {
@@ -46,14 +48,16 @@ function flattenMap (tree, field) {
   return flatten(tree).map(mapper)
 }
 
-function lookupPackages (pkgs, opts, cb) {
+function lookupPackages (pkgs, opts, lookups, cb) {
   fw.eachSeries(pkgs, resolvePackage, function (err, pkgs) {
     if (err) return cb(err)
-    resolveDependencies(pkgs, opts, cb)
+    resolveDependencies(pkgs, opts, lookups, cb)
   })
 }
 
 function resolvePackage (pkg, cb) {
+  if (pkg.cyclic) return cb(null, pkg)
+
   resolve(pkg.name, { basedir: pkg.basedir }, function (err, main) {
     if (err) return cb(err)
 
@@ -69,14 +73,19 @@ function resolvePackage (pkg, cb) {
       pkg.manifest = manifestPath
       pkg.root = path.dirname(manifestPath)
       pkg.meta = manifest
+      pkg.version = manifest.version
 
       cb(null, pkg)
     })
   })
 }
 
-function resolveDependencies (pkgs, opts, cb) {
+function resolveDependencies (pkgs, opts, lookups, cb) {
   fw.eachSeries(pkgs, function (pkg, next) {
+    if (pkg.cyclic) {
+      return next(null, pkg)
+    }
+
     const deps = readDependencies(pkg.meta, opts)
     if (!deps.length) return next(null, pkg)
 
@@ -85,7 +94,7 @@ function resolveDependencies (pkgs, opts, cb) {
     options.basedir = path.dirname(pkg.manifest)
 
     // Resolve package child dependencies
-    resolveByName(deps, options, childDependencies(pkg, next))
+    resolveByName(deps, options, childDependencies(pkg, next), lookups)
   }, cb)
 }
 
@@ -124,16 +133,31 @@ function readDependencies (manifest, opts) {
   }, [])
 }
 
-function mapPackages (pkgs, opts) {
-  return pkgs.map(function (name) {
+function mapPackages (pkgs, opts, lookups) {
+  return pkgs
+  .map(function (name) {
+    const predecessor = lookups.reduce(function (match, pkg) {
+      if (match) return match
+      if (pkg.name === name) return pkg
+    }, null)
+
+    if (predecessor) {
+      return assign({ cyclic: true }, predecessor)
+    }
+
     const basedir = opts.basedir
     const pkgPath = path.join(basedir, 'node_modules', name, 'package.json')
 
-    return {
+    const pkg = {
       name: name,
       manifest: pkgPath,
       basedir: basedir
     }
+
+    // Register package lookup
+    lookups.push(pkg)
+
+    return pkg
   })
 }
 
