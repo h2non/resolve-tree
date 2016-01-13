@@ -32,7 +32,11 @@ function resolveByName (names, params, cb, lookups) {
 }
 
 function flatten (tree, buf) {
-  return tree.reduce(function (buf, pkg) {
+  return tree
+  .filter(function (pkg) {
+    return pkg && pkg.root
+  })
+  .reduce(function (buf, pkg) {
     buf.push(pkg)
     if (Array.isArray(pkg.dependencies)) {
       flatten(pkg.dependencies, buf)
