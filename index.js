@@ -33,9 +33,7 @@ function resolveByName (names, params, cb, lookups) {
 
 function flatten (tree, buf) {
   return tree
-  .filter(function (pkg) {
-    return pkg && pkg.root
-  })
+  .filter(exists)
   .reduce(function (buf, pkg) {
     buf.push(pkg)
     if (Array.isArray(pkg.dependencies)) {
@@ -43,10 +41,6 @@ function flatten (tree, buf) {
     }
     return buf
   }, buf || [])
-}
-
-function notEmpty (x) {
-  return x != null
 }
 
 function flattenMap (tree, field) {
@@ -59,8 +53,13 @@ function flattenMap (tree, field) {
 function lookupPackages (pkgs, opts, lookups, cb) {
   fw.each(pkgs, resolvePackage, function (err, pkgs) {
     if (err) return cb(err)
-    resolveDependencies(pkgs, opts, lookups, cb)
+    resolveDependencies(pkgs, opts, lookups, resolve)
   })
+
+  function resolve (err, pkgs) {
+    if (err || !pkgs) return cb(err, [])
+    cb(null, pkgs.filter(exists))
+  }
 }
 
 function resolvePackage (pkg, cb) {
@@ -185,4 +184,12 @@ function readJSON (path) {
 
 function isRoot (dir) {
   return path.dirname(dir) === '/'
+}
+
+function notEmpty (x) {
+  return x != null
+}
+
+function exists (pkg) {
+  return pkg && pkg.root
 }
