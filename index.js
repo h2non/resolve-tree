@@ -45,11 +45,15 @@ function flatten (tree, buf) {
   }, buf || [])
 }
 
+function notEmpty (x) {
+  return x != null
+}
+
 function flattenMap (tree, field) {
   const mapper = typeof field === 'function' ? field : function (pkg) {
     return pkg[field || 'manifest']
   }
-  return flatten(tree).map(mapper)
+  return flatten(tree).filter(notEmpty).map(mapper)
 }
 
 function lookupPackages (pkgs, opts, lookups, cb) {
