@@ -15,6 +15,10 @@ It also mimics the recursive module resolution behavior used by `npm`.
 - Almost dependency free (only uses some stable tiny modules)
 - Fast: all the I/O operations are executed asynchronously in parallel
 
+## Not supported yet
+
+- Semantic version operator based resolution
+
 ## Installation
 
 ```bash
@@ -51,6 +55,7 @@ The resolved dependency tree serialized to JSON looks like this:
   "basedir": "/Users/h2non/Projects/resolve-tree/fixtures/simple",
   "main": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo/index.js",
   "root": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo",
+  "version": "0.1.0",
   "meta": {
     "name": "foo",
     "dependencies": {
@@ -65,6 +70,7 @@ The resolved dependency tree serialized to JSON looks like this:
     "basedir": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo",
     "main": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/baz/index.js",
     "root": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/baz",
+    "version": "0.1.0",
     "meta": {
       "name": "baz"
     }
@@ -74,6 +80,7 @@ The resolved dependency tree serialized to JSON looks like this:
     "basedir": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo",
     "main": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/bar/index.js",
     "root": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/bar",
+    "version": "0.1.0",
     "meta": {
       "name": "bar",
       "dependencies": {
@@ -86,6 +93,7 @@ The resolved dependency tree serialized to JSON looks like this:
       "basedir": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/bar",
       "main": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/baz/index.js",
       "root": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/baz",
+      "version": "0.1.0",
       "meta": {
         "name": "baz"
       }
@@ -96,6 +104,7 @@ The resolved dependency tree serialized to JSON looks like this:
     "basedir": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo",
     "main": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo/node_modules/quz/index.js",
     "root": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo/node_modules/quz",
+    "version": "0.1.0",
     "meta": {
       "name": "quz",
       "dependencies": {
@@ -108,6 +117,7 @@ The resolved dependency tree serialized to JSON looks like this:
       "basedir": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo/node_modules/quz",
       "main": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo/node_modules/quz/node_modules/baz/index.js",
       "root": "/Users/h2non/Projects/resolve-tree/fixtures/simple/node_modules/foo/node_modules/quz/node_modules/baz",
+      "version": "0.1.0",
       "meta": {
         "name": "baz",
         "version": "0.0.1"
