@@ -11,7 +11,7 @@ test('find', function (t) {
   t.plan(10)
 
   resolveSimple(function assert (err, deps) {
-    t.equal(err, null)
+    t.equal(err, undefined)
     t.equal(deps.length, 1)
 
     const foo = deps.shift()
@@ -34,7 +34,7 @@ test('manifest', function (t) {
   const opts = { basedir: __dirname + '/fixtures/simple' }
 
   resolve.manifest(manifest, opts, function assert (err, deps) {
-    t.equal(err, null)
+    t.equal(err, undefined)
     t.equal(deps.length, 1)
 
     const foo = deps.shift()
@@ -54,7 +54,7 @@ test('flatten', function (t) {
   t.plan(2)
 
   resolveSimple(function assert (err, deps) {
-    t.equal(err, null)
+    t.equal(err, undefined)
     const list = resolve.flatten(deps)
     t.equal(list.length, 6)
   })
@@ -64,7 +64,7 @@ test('flattenMap', function (t) {
   t.plan(3)
 
   resolveSimple(function assert (err, deps) {
-    t.equal(err, null)
+    t.equal(err, undefined)
 
     const list = resolve.flattenMap(deps)
     t.equal(list.length, 6)

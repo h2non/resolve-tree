@@ -49,7 +49,7 @@ function flattenMap (tree, field) {
 }
 
 function lookupPackages (pkgs, opts, lookups, cb) {
-  fw.eachSeries(pkgs, resolvePackage, function (err, pkgs) {
+  fw.each(pkgs, resolvePackage, function (err, pkgs) {
     if (err) return cb(err)
     resolveDependencies(pkgs, opts, lookups, cb)
   })
@@ -81,10 +81,8 @@ function resolvePackage (pkg, cb) {
 }
 
 function resolveDependencies (pkgs, opts, lookups, cb) {
-  fw.eachSeries(pkgs, function (pkg, next) {
-    if (pkg.cyclic) {
-      return next(null, pkg)
-    }
+  fw.each(pkgs, function (pkg, next) {
+    if (pkg.cyclic) return next(null, pkg)
 
     const deps = readDependencies(pkg.meta, opts)
     if (!deps.length) return next(null, pkg)
