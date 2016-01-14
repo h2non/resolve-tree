@@ -51,7 +51,7 @@ function flattenMap (tree, field) {
 }
 
 function lookupPackages (pkgs, opts, lookups, cb) {
-  fw.each(pkgs, resolvePackage(lookups, opts), function (err, pkgs) {
+  fw.each(pkgs, resolvePackage(lookups), function (err, pkgs) {
     if (err) return cb(err)
     resolveDependencies(pkgs, opts, lookups, resolve)
   })
@@ -62,16 +62,21 @@ function lookupPackages (pkgs, opts, lookups, cb) {
   }
 }
 
-function getCircular (lookups, pkg, opts) {
-  return lookups.reduce(function (match, lookup) {
+function findPredecessor (lookups, pkg) {
+  const predecessor = lookups.reduce(function (match, lookup) {
     if (match) return match
-    if (pkg.repeated && path.dirname(path.dirname(pkg.root)) === opts.root) {
-      return lookup
-    }
+    if (lookup === pkg) return null
+    if (lookup.root === pkg.root) return lookup
   }, null)
+
+  if (predecessor) {
+    return assign({ repeated: true }, predecessor)
+  }
+
+  return null
 }
 
-function resolvePackage (lookups, opts) {
+function resolvePackage (lookups) {
   return function (pkg, next) {
     resolve(pkg.name, { basedir: pkg.basedir }, function (err, main) {
       if (err) return next(err)
@@ -90,8 +95,9 @@ function resolvePackage (lookups, opts) {
         pkg.meta = manifest
         pkg.version = manifest.version
 
-        const circular = getCircular(lookups, pkg, opts)
-        if (circular) pkg.circular = true
+        // Detect if it is a redundant dependency
+        const predecessor = findPredecessor(lookups, pkg)
+        if (predecessor) return next(null, predecessor)
 
         next(null, pkg)
       })
@@ -108,8 +114,8 @@ function resolveDependencies (pkgs, opts, lookups, cb) {
     const options = assign({}, opts)
     options.basedir = path.dirname(pkg.manifest)
 
-    // If circular, just continue
-    if (pkg.circular) return next(null, pkg)
+    // If circular, just continue with it
+    if (pkg.repeated) return next(null, pkg)
 
     // Resolve package child dependencies
     resolveByName(deps, options, childDependencies(pkg, next), lookups)
@@ -151,13 +157,6 @@ function readDependencies (manifest, opts) {
   }, [])
 }
 
-function isRepeated (lookups, name) {
-  return lookups.reduce(function (match, pkg) {
-    if (match) return match
-    if (pkg.name === name) return pkg
-  }, null) !== null
-}
-
 function mapPackages (pkgs, opts, lookups) {
   return pkgs.map(function (name) {
     const basedir = opts.basedir
@@ -166,11 +165,9 @@ function mapPackages (pkgs, opts, lookups) {
     const pkg = {
       name: name,
       manifest: pkgPath,
-      basedir: basedir,
-      repeated: isRepeated(lookups, name)
+      basedir: basedir
     }
 
-    // Register package
     lookups.push(pkg)
     return pkg
   })
@@ -183,7 +180,7 @@ function setOptions (params) {
     basedir: cwd,
     root: cwd
   }
-  return assign(defaults, params || {})
+  return assign(defaults, params)
 }
 
 function readJSON (path) {
