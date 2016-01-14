@@ -51,7 +51,7 @@ function flattenMap (tree, field) {
 }
 
 function lookupPackages (pkgs, opts, lookups, cb) {
-  fw.each(pkgs, resolvePackage, function (err, pkgs) {
+  fw.each(pkgs, resolvePackage(lookups, opts), function (err, pkgs) {
     if (err) return cb(err)
     resolveDependencies(pkgs, opts, lookups, resolve)
   })
@@ -62,41 +62,54 @@ function lookupPackages (pkgs, opts, lookups, cb) {
   }
 }
 
-function resolvePackage (pkg, cb) {
-  if (pkg.cyclic) return cb(null, pkg)
+function getCircular (lookups, pkg, opts) {
+  return lookups.reduce(function (match, lookup) {
+    if (match) return match
+    if (pkg.repeated && path.dirname(path.dirname(pkg.root)) === opts.root) {
+      return lookup
+    }
+  }, null)
+}
 
-  resolve(pkg.name, { basedir: pkg.basedir }, function (err, main) {
-    if (err) return cb(err)
+function resolvePackage (lookups, opts) {
+  return function (pkg, next) {
+    resolve(pkg.name, { basedir: pkg.basedir }, function (err, main) {
+      if (err) return next(err)
 
-    const base = path.dirname(main)
-    findMainfest(base, function (err, manifestPath) {
-      if (err) return cb(new Error('Cannot find package.json for package: ' + pkg.name))
+      const base = path.dirname(main)
+      findMainfest(base, function (err, manifestPath) {
+        if (err) return next(new Error('Cannot find package.json for package: ' + pkg.name))
 
-      const manifest = readJSON(manifestPath)
-      if (!manifest) return cb(new Error('Bad formed JSON: ' + manifestPath))
+        const manifest = readJSON(manifestPath)
+        if (!manifest) return next(new Error('Bad formed JSON: ' + manifestPath))
 
-      // Attach package required fields
-      pkg.main = main
-      pkg.manifest = manifestPath
-      pkg.root = path.dirname(manifestPath)
-      pkg.meta = manifest
-      pkg.version = manifest.version
+        // Attach package required fields
+        pkg.main = main
+        pkg.manifest = manifestPath
+        pkg.root = path.dirname(manifestPath)
+        pkg.meta = manifest
+        pkg.version = manifest.version
 
-      cb(null, pkg)
+        const circular = getCircular(lookups, pkg, opts)
+        if (circular) pkg.circular
+
+        next(null, pkg)
+      })
     })
-  })
+  }
 }
 
 function resolveDependencies (pkgs, opts, lookups, cb) {
-  fw.each(pkgs, function (pkg, next) {
-    if (pkg.cyclic) return next(null, pkg)
-
+  fw.eachSeries(pkgs, function (pkg, next) {
     const deps = readDependencies(pkg.meta, opts)
     if (!deps.length) return next(null, pkg)
 
     // Overwrite options for the next lookup
     const options = assign({}, opts)
     options.basedir = path.dirname(pkg.manifest)
+
+    // If circular, just continue
+    if (pkg.circular) return next(null, pkg)
 
     // Resolve package child dependencies
     resolveByName(deps, options, childDependencies(pkg, next), lookups)
@@ -138,28 +151,27 @@ function readDependencies (manifest, opts) {
   }, [])
 }
 
+function isRepeated (lookups, name) {
+  return lookups.reduce(function (match, pkg) {
+    if (match) return match
+    if (pkg.name === name) return pkg
+  }, null) !== null
+}
+
 function mapPackages (pkgs, opts, lookups) {
   return pkgs
   .map(function (name) {
-    const predecessor = lookups.reduce(function (match, pkg) {
-      if (match) return match
-      if (pkg.name === name) return pkg
-    }, null)
-
-    if (predecessor) {
-      return assign({ cyclic: true }, predecessor)
-    }
-
     const basedir = opts.basedir
     const pkgPath = path.join(basedir, 'node_modules', name, 'package.json')
 
     const pkg = {
       name: name,
       manifest: pkgPath,
-      basedir: basedir
+      basedir: basedir,
+      repeated: isRepeated(lookups, name)
     }
 
-    // Register package lookup
+    // Register package
     lookups.push(pkg)
 
     return pkg
@@ -167,9 +179,11 @@ function mapPackages (pkgs, opts, lookups) {
 }
 
 function setOptions (params) {
+  const cwd = process.cwd()
   const defaults = {
     lookups: ['dependencies'],
-    basedir: process.cwd()
+    basedir: cwd,
+    root: cwd
   }
   return assign(defaults, params || {})
 }
