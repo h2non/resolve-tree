@@ -80,13 +80,13 @@ function resolvePackage (lookups) {
   return function (pkg, next) {
     resolve(pkg.name, { basedir: pkg.basedir }, function (err, main) {
       if (err) return next(err)
-      const base = path.dirname(main)
-      resolveManifest(base, pkg, next)
+      resolveManifest(main, pkg, lookups, next)
     })
   }
 }
 
-function resolveManifest (base, pkg, next) {
+function resolveManifest (main, pkg, lookups, next) {
+  const base = path.dirname(main)
   findMainfest(base, function (err, manifestPath) {
     if (err) return next(new Error('Cannot find package.json for package: ' + pkg.name))
 
