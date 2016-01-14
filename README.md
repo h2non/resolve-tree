@@ -9,7 +9,7 @@ It also mimics the recursive module resolution behavior used by `npm`.
 
 - Recursively resolves a node_modules dependency tree
 - Proper error reporting if some package cannot be resolved or is missing
-- Detects circular and repeated dependencies across nested dependency trees.
+- Detects repeated and circular dependencies across nested dependency trees.
 - Module lookup algorithm behavies like [`require.resolve`](https://nodejs.org/docs/v0.4.8/api/all.html#all_Together...)
 - Produces a detailed abstract dependency tree representation
 - Provides convenient helpers that you will love
