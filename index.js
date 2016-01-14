@@ -62,13 +62,6 @@ function lookupPackages (pkgs, opts, lookups, cb) {
   }
 }
 
-function first (lookups, name) {
-  return lookups.reduce(function (match, pkg) {
-    if (match) return match
-    if (pkg.name === name) return pkg
-  }, null)
-}
-
 function getCircular (lookups, pkg, opts) {
   return lookups.reduce(function (match, lookup) {
     if (match) return match
