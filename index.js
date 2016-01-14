@@ -62,6 +62,13 @@ function lookupPackages (pkgs, opts, lookups, cb) {
   }
 }
 
+function first (lookups, name) {
+  return lookups.reduce(function (match, pkg) {
+    if (match) return match
+    if (pkg.name === name) return pkg
+  }, null)
+}
+
 function getCircular (lookups, pkg, opts) {
   return lookups.reduce(function (match, lookup) {
     if (match) return match
@@ -100,7 +107,7 @@ function resolvePackage (lookups, opts) {
 }
 
 function resolveDependencies (pkgs, opts, lookups, cb) {
-  fw.eachSeries(pkgs, function (pkg, next) {
+  fw.each(pkgs, function (pkg, next) {
     const deps = readDependencies(pkg.meta, opts)
     if (!deps.length) return next(null, pkg)
 
@@ -159,8 +166,7 @@ function isRepeated (lookups, name) {
 }
 
 function mapPackages (pkgs, opts, lookups) {
-  return pkgs
-  .map(function (name) {
+  return pkgs.map(function (name) {
     const basedir = opts.basedir
     const pkgPath = path.join(basedir, 'node_modules', name, 'package.json')
 
@@ -173,7 +179,6 @@ function mapPackages (pkgs, opts, lookups) {
 
     // Register package
     lookups.push(pkg)
-
     return pkg
   })
 }
