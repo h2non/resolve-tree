@@ -80,29 +80,32 @@ function resolvePackage (lookups) {
   return function (pkg, next) {
     resolve(pkg.name, { basedir: pkg.basedir }, function (err, main) {
       if (err) return next(err)
-
       const base = path.dirname(main)
-      findMainfest(base, function (err, manifestPath) {
-        if (err) return next(new Error('Cannot find package.json for package: ' + pkg.name))
-
-        const manifest = readJSON(manifestPath)
-        if (!manifest) return next(new Error('Bad formed JSON: ' + manifestPath))
-
-        // Attach package required fields
-        pkg.main = main
-        pkg.manifest = manifestPath
-        pkg.root = path.dirname(manifestPath)
-        pkg.meta = manifest
-        pkg.version = manifest.version
-
-        // Detect if it is a redundant dependency
-        const predecessor = findPredecessor(lookups, pkg)
-        if (predecessor) return next(null, predecessor)
-
-        next(null, pkg)
-      })
+      resolveManifest(base, pkg, next)
     })
   }
+}
+
+function resolveManifest (base, pkg, next) {
+  findMainfest(base, function (err, manifestPath) {
+    if (err) return next(new Error('Cannot find package.json for package: ' + pkg.name))
+
+    const manifest = readJSON(manifestPath)
+    if (!manifest) return next(new Error('Bad formed JSON: ' + manifestPath))
+
+    // Attach package required fields
+    pkg.main = main
+    pkg.manifest = manifestPath
+    pkg.root = path.dirname(manifestPath)
+    pkg.meta = manifest
+    pkg.version = manifest.version
+
+    // Detect if it is a redundant dependency
+    const predecessor = findPredecessor(lookups, pkg)
+    if (predecessor) return next(null, predecessor)
+
+    next(null, pkg)
+  })
 }
 
 function resolveDependencies (pkgs, opts, lookups, cb) {
