@@ -91,7 +91,7 @@ function resolvePackage (lookups, opts) {
         pkg.version = manifest.version
 
         const circular = getCircular(lookups, pkg, opts)
-        if (circular) pkg.circular
+        if (circular) pkg.circular = true
 
         next(null, pkg)
       })
