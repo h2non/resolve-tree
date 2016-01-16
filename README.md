@@ -152,6 +152,16 @@ Flatten dependency tree to one level structure tree.
 
 Flatten the given dependency tree mapping by dependency value field or custom mapper function.
 
+### resolve.resolutions = `object`
+
+Map of packages resolution mappings.
+
+```js
+{
+  'mz': 'mz/fs'
+}
+```
+
 ## License
 
 MIT - Tomas Aparicio

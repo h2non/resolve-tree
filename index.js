@@ -4,6 +4,16 @@ const path = require('path')
 const resolve = require('resolve')
 const assign = require('object-assign')
 
+// List of packages that doesn't have a main module.
+// This is needed since some open source package maintainers
+// are incoherently opposed to provide a main module in
+// their packagesto be properly resolved by the node module
+// lookup algorithm.
+const resolutions = {
+  'mz': 'mz/fs'
+}
+
+exports.resolutions = resolutions
 exports.byName = resolveByName
 exports.packages = resolveByName
 exports.manifest = manifest
@@ -78,7 +88,11 @@ function findPredecessor (lookups, pkg) {
 
 function resolvePackage (lookups) {
   return function (pkg, next) {
-    resolve(pkg.name, { basedir: pkg.basedir }, function (err, main) {
+    const name = resolutions.hasOwnProperty(pkg.name)
+      ? resolutions[pkg.name]
+      : pkg.name
+
+    resolve(name, { basedir: pkg.basedir }, function (err, main) {
       if (err) return next(err)
       resolveManifest(main, pkg, lookups, next)
     })
