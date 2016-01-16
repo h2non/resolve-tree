@@ -6,9 +6,9 @@ const assign = require('object-assign')
 
 // List of packages that doesn't have a main module.
 // This is needed since some open source package maintainers
-// are incoherently opposed to provide a main module in
-// their packagesto be properly resolved by the node module
-// lookup algorithm.
+// are absurdly opposed to provide a main module in
+// their packagesto in order to be properly resolved
+// by the node module lookup algorithm.
 const resolutions = {
   'mz': 'mz/fs'
 }
