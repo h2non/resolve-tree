@@ -5,12 +5,8 @@ const resolve = require('resolve')
 const assign = require('object-assign')
 
 // List of packages that doesn't have a main module.
-// This is needed since some open source package maintainers
-// are absurdly opposed to provide a main module in
-// their packagesto in order to be properly resolved
-// by the node module lookup algorithm.
 const resolutions = {
-  'mz': 'mz/fs'
+  'spdx-exceptions': 'spdx-exceptions/index.json'
 }
 
 exports.resolutions = resolutions
