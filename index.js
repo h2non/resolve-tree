@@ -6,6 +6,7 @@ const assign = require('object-assign')
 
 // List of packages that doesn't have a main module.
 const resolutions = {
+  'mz': 'mz/fs',
   'spdx-exceptions': 'spdx-exceptions/index.json'
 }
 
