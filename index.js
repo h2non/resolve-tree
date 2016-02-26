@@ -6,6 +6,7 @@ const assign = require('object-assign')
 
 // List of packages that doesn't have a main module.
 const resolutions = {
+  'babel-runtime': 'babel-runtime/core-js.js',
   'mz': 'mz/fs',
   'spdx-exceptions': 'spdx-exceptions/index.json'
 }
