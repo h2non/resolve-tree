@@ -1,0 +1,10 @@
+{
+  "name": "test",
+  "dependencies": {
+    "foo": "^0.1.0"
+  },
+  "optionalDependencies": {
+    "optional": "^0.1.0",
+    "invalid": "^0.1.0"
+  }
+}

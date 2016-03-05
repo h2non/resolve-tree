@@ -11,6 +11,7 @@ const resolutions = {
   'spdx-exceptions': 'spdx-exceptions/index.json'
 }
 
+// Export API
 exports.resolutions = resolutions
 exports.byName = resolveByName
 exports.packages = resolveByName
@@ -61,12 +62,16 @@ function flattenMap (tree, field) {
 function lookupPackages (pkgs, opts, lookups, cb) {
   fw.each(pkgs, resolvePackage(lookups), function (err, pkgs) {
     if (err) return cb(err)
-    resolveDependencies(pkgs, opts, lookups, resolve)
+    resolveDependencies(filter(pkgs), opts, lookups, resolve)
   })
 
   function resolve (err, pkgs) {
     if (err || !pkgs) return cb(err, [])
-    cb(null, pkgs.filter(exists))
+    cb(null, filter(pkgs))
+  }
+
+  function filter (pkgs) {
+    return pkgs.filter(exists)
   }
 }
 
@@ -90,8 +95,14 @@ function resolvePackage (lookups) {
       ? resolutions[pkg.name]
       : pkg.name
 
+    // Resolve package via require.resolve() algorithm
     resolve(name, { basedir: pkg.basedir }, function (err, main) {
-      if (err) return next(err)
+      if (err && pkg.optional) {
+        return next()
+      }
+      if (err) {
+        return next(err)
+      }
       resolveManifest(main, pkg, lookups, next)
     })
   }
@@ -168,23 +179,37 @@ function findMainfest (base, cb) {
 function readDependencies (manifest, opts) {
   return opts.lookups.reduce(function (buf, type) {
     const deps = Object.keys(manifest[type] || {})
+    .map(function (name) {
+      return {
+        name: name,
+        optional: type === 'optionalDependencies'
+      }
+    })
     return buf.concat(deps)
   }, [])
 }
 
 function mapPackages (pkgs, opts, lookups) {
-  return pkgs.map(function (name) {
+  return pkgs
+  .map(function (pkg) {
+    if (typeof pkg === 'string') {
+      return { name: pkg }
+    }
+    return pkg
+  })
+  .map(function (pkg) {
     const basedir = opts.basedir
-    const pkgPath = path.join(basedir, 'node_modules', name, 'package.json')
+    const pkgPath = path.join(basedir, 'node_modules', pkg.name, 'package.json')
 
-    const pkg = {
-      name: name,
+    const meta = {
+      name: pkg.name,
       manifest: pkgPath,
-      basedir: basedir
+      basedir: basedir,
+      optional: pkg.optional === true
     }
 
-    lookups.push(pkg)
-    return pkg
+    lookups.push(meta)
+    return meta
   })
 }
 
