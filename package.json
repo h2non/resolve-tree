@@ -1,7 +1,7 @@
 {
   "name": "resolve-tree",
-  "version": "0.1.8",
-  "description": "Recursively resolve node.js modules and its dependencies looking in package.json and node_modules trees",
+  "version": "0.1.9",
+  "description": "Recursively resolve node.js modules and its dependencies looking in node_modules trees",
   "main": "index.js",
   "engineStrict": true,
   "scripts": {
