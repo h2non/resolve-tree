@@ -61,7 +61,7 @@ test('optional dependencies', function (t) {
 
   resolve.manifest(manifest, opts, function assert (err, deps) {
     t.equal(err, null)
-    t.equal(deps.length, 2)
+    t.equal(deps.length, 3)
 
     const foo = deps.shift()
     t.equal(foo.name, 'foo')
