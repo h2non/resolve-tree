@@ -5,6 +5,7 @@ const resolve = require('resolve')
 const assign = require('object-assign')
 
 // List of packages that doesn't have a main module.
+// You can extend the map via mutation, or send a PR to add custom packages.
 const resolutions = {
   'babel-runtime': 'babel-runtime/core-js.js',
   'mz': 'mz/fs',
@@ -182,11 +183,16 @@ function readDependencies (manifest, opts) {
     .map(function (name) {
       return {
         name: name,
-        optional: type === 'optionalDependencies'
+        optional: isOptional(manifest, type, name)
       }
     })
     return buf.concat(deps)
   }, [])
+}
+
+function isOptional (manifest, type, name) {
+  return type === 'optionalDependencies' ||
+    Object.prototype.hasOwnProperty.call(manifest.optionalDependencies || {}, name)
 }
 
 function mapPackages (pkgs, opts, lookups) {
