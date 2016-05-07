@@ -9,7 +9,8 @@ const assign = require('object-assign')
 const resolutions = {
   'babel-runtime': 'babel-runtime/core-js.js',
   'mz': 'mz/fs',
-  'spdx-exceptions': 'spdx-exceptions/index.json'
+  'spdx-exceptions': 'spdx-exceptions/index.json',
+  'semantic-ui': 'sematic-ui/package.json'
 }
 
 // Export API
