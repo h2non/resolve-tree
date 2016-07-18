@@ -97,7 +97,7 @@ function resolvePackage (lookups) {
   return function (pkg, next) {
     const name = resolutions.hasOwnProperty(pkg.name)
       ? resolutions[pkg.name]
-      : pkg.name
+      : path.join(pkg.name, 'package.json')
 
     // Resolve package via require.resolve() algorithm
     resolve(name, { basedir: pkg.basedir }, function (err, main) {
