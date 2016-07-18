@@ -7,10 +7,12 @@ const assign = require('object-assign')
 // List of packages that doesn't have a main module.
 // You can extend the map via mutation, or send a PR to add custom packages.
 const resolutions = {
-  'babel-runtime': 'babel-runtime/core-js.js',
+  'babel-runtime': 'babel-runtime/core-js',
   'mz': 'mz/fs',
   'spdx-exceptions': 'spdx-exceptions/index.json',
-  'semantic-ui': 'sematic-ui/package.json'
+  'semantic-ui': 'sematic-ui/package.json',
+  'timers-ext': 'timers-ext/package.json',
+  'unicode': 'unicode/package.json'
 }
 
 // Export API
