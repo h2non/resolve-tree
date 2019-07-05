@@ -313,7 +313,7 @@ function resolvePackageSync (lookups) {
 
 function resolveManifestSync (main, pkg, lookups) {
   const base = path.dirname(main)
-  let manifestPath
+  var manifestPath
   try {
     manifestPath = findMainfestSync(base)
   } catch (err) {
