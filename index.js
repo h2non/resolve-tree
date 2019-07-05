@@ -251,3 +251,125 @@ function notEmpty (x) {
 function exists (pkg) {
   return pkg && pkg.root
 }
+
+// ---- Sync ----
+
+// Export Sync API
+exports.byNameSync = resolveByNameSync
+exports.packagesSync = resolveByNameSync
+exports.manifestSync = manifestSync
+
+function manifestSync (meta, params) {
+  if (typeof params === 'undefined') { params = {} }
+
+  const opts = setOptions(params)
+  const deps = readDependencies(meta, opts)
+
+  return resolveByNameSync(deps, opts)
+}
+
+function resolveByNameSync (names, params, lookups) {
+  lookups = lookups || []
+
+  if (typeof params === 'undefined') { params = {} }
+  if (typeof names === 'string') names = [ names ]
+
+  const opts = setOptions(params)
+  const pkgs = mapPackages(names, opts, lookups)
+
+  return lookupPackagesSync(pkgs, opts, lookups)
+}
+
+function lookupPackagesSync (pkgs, opts, lookups, cb) {
+  pkgs = pkgs.map(function (pkg) {
+    return resolvePackageSync(lookups)(pkg)
+  })
+  const resolved = resolveDependenciesSync(filter(pkgs), opts, lookups)
+  return filter(resolved)
+
+  function filter (pkgs) {
+    return pkgs.filter(exists)
+  }
+}
+
+function resolvePackageSync (lookups) {
+  return function (pkg) {
+    const name = resolutions.hasOwnProperty(pkg.name)
+      ? resolutions[pkg.name]
+      : path.join(pkg.name, 'package.json')
+
+    // Resolve package via require.resolve() algorithm
+    try {
+      const main = resolve.sync(name, { basedir: pkg.basedir })
+      return resolveManifestSync(main, pkg, lookups)
+    } catch (err) {
+      if (err && pkg.optional) {
+        return
+      }
+      throw err
+    }
+  }
+}
+
+function resolveManifestSync (main, pkg, lookups) {
+  const base = path.dirname(main)
+  let manifestPath
+  try {
+    manifestPath = findMainfestSync(base)
+  } catch (err) {
+    throw new Error('Cannot find package.json for package: ' + pkg.name)
+  }
+
+  const manifest = readJSON(manifestPath)
+  if (!manifest) throw new Error('Bad formed JSON: ' + manifestPath)
+
+  // Attach package required fields
+  pkg.main = main
+  pkg.manifest = manifestPath
+  pkg.root = path.dirname(manifestPath)
+  pkg.meta = manifest
+  pkg.version = manifest.version
+
+  // Detect if it is a redundant dependency
+  const predecessor = findPredecessor(lookups, pkg)
+  if (predecessor) return predecessor
+
+  return pkg
+}
+
+function findMainfestSync (base) {
+  const file = path.join(base, 'package.json')
+
+  const exists = fs.existsSync(file)
+  if (exists) return file
+
+  const parent = path.join(base, '..')
+  if (isRoot(parent)) throw new Error('Cannot find package.json')
+
+  // Find package in parent directory
+  return findMainfestSync(parent)
+}
+
+function resolveDependenciesSync (pkgs, opts, lookups) {
+  return pkgs.map(function (pkg) {
+    const deps = readDependencies(pkg.meta, opts)
+    if (!deps.length) return pkg
+
+    // Overwrite options for the next lookup
+    const options = assign({}, opts)
+    options.basedir = path.dirname(pkg.manifest)
+
+    // If circular, just continue with it
+    if (pkg.repeated) return pkg
+
+    // Resolve package child dependencies
+    const resolved = resolveByNameSync(deps, options, lookups)
+    return childDependenciesSync(pkg)(resolved)
+  })
+}
+
+function childDependenciesSync (pkg) {
+  return function (deps) {
+    return attachDependencies(pkg, deps)
+  }
+}
