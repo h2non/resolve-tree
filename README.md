@@ -162,6 +162,17 @@ Map of packages resolution mappings.
 }
 ```
 
+### resolve.packagesSync(names, [ opts ])
+Alias: `byNameSync`
+
+Synchronous version of `packages`.
+Find and resolve modules and its dependencies recursively looking by package name.
+
+### resolve.manifestSync(pkgManifest, [ opts ])
+
+Synchronous version of `manifest`.
+Resolve dependencies recursively reading the `package.json` metadata.
+
 ## License
 
 MIT - Tomas Aparicio
